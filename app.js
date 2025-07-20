@@ -13,7 +13,7 @@ app.use(express.json());
 
 app.use((req, res, next) => {
   req.user = {
-    _id: "685e58f49451bce59de9d54d",
+    _id: "6870c57c14671a99529a3fd7",
   };
   next();
 });
@@ -24,7 +24,10 @@ app.use("/items", itemsRoutes);
 app.use(errorMiddleware);
 
 try {
-  mongoose.connect("mongodb://127.0.0.1:27017/wtwr_db");
+  mongoose.connect("mongodb://127.0.0.1:27017/wtwr_db", {
+    connectTimeoutMS: 5000,
+    serverSelectionTimeoutMS: 5000,
+  });
 } catch (err) {
   console.log(`Error database: ${err.message}`);
   process.exit(1);

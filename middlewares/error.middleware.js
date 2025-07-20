@@ -5,12 +5,18 @@ const {
   SERVER_ERROR_MESSAGE,
 } = require("../utils/errors");
 
-module.exports = (err, req, res, next) => {
+module.exports = (err, _req, res, _next) => {
   console.log(
     `Error ${err.name} with the message ${err.message} has occurred while executing the code`
   );
+  const errorsArray = [BAD_REQUEST, NOT_FOUND];
+  if (err.statusCode && errorsArray.includes(err.statusCode)) {
+    return res.status(err.statusCode).send({ message: err.message });
+  }
+  return res
+    .status(INTERNAL_SERVER_ERROR)
+    .send({ message: SERVER_ERROR_MESSAGE });
 
-  return res.status(err.statusCode).send({ message: err.message });
   // if (err.name === "BAD_REQUEST") {
   //   return res.status(BAD_REQUEST).send({ message: err.message });
   // } else if (err.name === "NOT_FOUND") {

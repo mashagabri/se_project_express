@@ -9,4 +9,8 @@ router.delete("/:itemId", clothingItemsController.deleteClothingItem);
 
 router.post("/", clothingItemsController.createNewItem);
 
+router.put("/:itemId/likes", clothingItemsController.likeClothingItem);
+
+router.delete("/:itemId/likes", clothingItemsController.unlikeClothingItem);
+
 module.exports = router;

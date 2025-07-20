@@ -1,19 +1,22 @@
-const User = require("../models/users");
+const User = require("../models/user");
+const mongoose = require("mongoose");
 const asyncHandler = require("../utils/asyncHandler");
-const {
-  BAD_REQUEST,
-  NOT_FOUND,
-  INTERNAL_SERVER_ERROR,
-} = require("../utils/errors");
+const { BAD_REQUEST, NOT_FOUND } = require("../utils/errors");
 
 exports.getUsers = asyncHandler(async (req, res) => {
   const users = await User.find();
-  res.json(users);
+  return res.json(users);
 });
 
 exports.getUser = asyncHandler(async (req, res) => {
-  const user = await User.findById(req.params.userId).orFail(() => {
-    const error = new Error("Item ID not found");
+  const userId = req.params.userId;
+  if (!mongoose.Types.ObjectId.isValid(userId)) {
+    const error = new Error("User ID is not valid");
+    error.statusCode = BAD_REQUEST;
+    throw error;
+  }
+  const user = await User.findById(userId).orFail(() => {
+    const error = new Error("User ID not found");
     error.statusCode = NOT_FOUND;
     throw error;
   });
