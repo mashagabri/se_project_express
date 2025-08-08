@@ -4,7 +4,9 @@ exports.errorRoutes = {
 
 module.exports = {
   BAD_REQUEST: 400,
+  ACCESS_ERROR: 403,
   NOT_FOUND: 404,
+  CONFLICT_ERROR: 409,
   INTERNAL_SERVER_ERROR: 500,
   SERVER_ERROR_MESSAGE: "An error has occurred on the server.",
 };

@@ -1,8 +1,7 @@
 const ClothingItem = require("../models/clothingItem");
 const asyncHandler = require("../utils/asyncHandler");
-const mongoose = require("mongoose");
 const checkValidity = require("../utils/checkValidity");
-const { NOT_FOUND, BAD_REQUEST } = require("../utils/errors");
+const { NOT_FOUND, BAD_REQUEST, ACCESS_ERROR } = require("../utils/errors");
 
 exports.getClothingItems = asyncHandler(async (req, res, next) => {
   const clothingItems = await ClothingItem.find();
@@ -11,10 +10,14 @@ exports.getClothingItems = asyncHandler(async (req, res, next) => {
 
 exports.deleteClothingItem = asyncHandler(async (req, res) => {
   const itemId = req.params.itemId;
+  const currentUserId = req.user._id;
   checkValidity(itemId, "Item id is not valid");
   const item = await ClothingItem.findByIdAndDelete(itemId);
   if (!item) {
-    return res.sendStatus(404);
+    return res.sendStatus(NOT_FOUND);
+  }
+  if (item.owner._id !== currentUserId) {
+    return res.sendStatus(ACCESS_ERROR);
   }
   return res.status(200).end();
 });
