@@ -9,6 +9,7 @@ const {
   BAD_REQUEST,
   SERVER_ERROR_MESSAGE,
   INTERNAL_SERVER_ERROR,
+  AUTHORIZATION_DENIED,
 } = require("../utils/errors");
 const checkValidity = require("../utils/checkValidity");
 const { handleMongoError } = require("../utils/handleErrors");
@@ -59,7 +60,7 @@ exports.createUser = asyncHandler(async (req, res) => {
   }
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
-    const user = new User({ name, avatar, email, hashedPassword });
+    const user = new User({ name, avatar, email, password: hashedPassword });
     await user.save();
     res
       .status(201)
@@ -84,8 +85,10 @@ exports.login = asyncHandler(async (req, res) => {
       res.send({ token });
     })
     .catch((err) => {
-      if (err.name === "Incorrect email or password") {
-        res.status(401).send({ message: err.message });
+      if (err.message === "Incorrect email or password") {
+        const error = new Error("Authorizations denied");
+        error.statusCode = AUTHORIZATION_DENIED;
+        throw error;
       }
       const error = new Error(SERVER_ERROR_MESSAGE);
       error.statusCode = INTERNAL_SERVER_ERROR;
