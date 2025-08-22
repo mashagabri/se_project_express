@@ -3,7 +3,7 @@ const clothingItemsController = require("../controllers/clothingItems");
 
 const router = express.Router();
 
-router.get("/", clothingItemsController.getClothingItems);
+// router.get("/", clothingItemsController.getClothingItems);
 
 router.delete("/:itemId", clothingItemsController.deleteClothingItem);
 

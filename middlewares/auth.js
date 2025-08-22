@@ -1,16 +1,22 @@
 const jwt = require("jsonwebtoken");
 const { JWT_SECRET } = require("../utils/config");
+const {
+  AUTHORIZATION_DENIED,
+  AUTHORIZATION_DENIED_MESSAGE,
+  INVALID_TOKEN,
+} = require("../utils/errors");
 
-module.exports = function (req, res, next) {
+module.exports = function auth(req, res, next) {
   const token = req.header("Authorization")?.replace("Bearer ", "");
   if (!token)
-    return res.status(401).json({ message: "No token, authorization denied" });
-
+    return res
+      .status(AUTHORIZATION_DENIED)
+      .json({ message: AUTHORIZATION_DENIED_MESSAGE });
   try {
     const payload = jwt.verify(token, JWT_SECRET);
     req.user = payload;
-    next();
+    return next();
   } catch (err) {
-    res.status(401).json({ message: "Invalid token" });
+    return res.status(AUTHORIZATION_DENIED).json({ message: INVALID_TOKEN });
   }
 };

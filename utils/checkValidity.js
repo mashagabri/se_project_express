@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
-const { BAD_REQUEST } = require("../utils/errors");
+const { BAD_REQUEST } = require("./errors");
 
-//check type ID  (24 symbols)
+// check type ID  (24 symbols)
 module.exports = (id, message) => {
   // is checking that there are 24 symbols(only letters and numbers)
   if (!mongoose.Types.ObjectId.isValid(id)) {

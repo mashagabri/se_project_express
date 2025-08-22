@@ -1,25 +1,39 @@
 const ClothingItem = require("../models/clothingItem");
 const asyncHandler = require("../utils/asyncHandler");
 const checkValidity = require("../utils/checkValidity");
-const { NOT_FOUND, BAD_REQUEST, ACCESS_ERROR } = require("../utils/errors");
+const {
+  NOT_FOUND,
+  BAD_REQUEST,
+  ACCESS_ERROR,
+  INTERNAL_SERVER_ERROR,
+} = require("../utils/errors");
 
-exports.getClothingItems = asyncHandler(async (req, res, next) => {
+exports.getClothingItems = asyncHandler(async (req, res) => {
   const clothingItems = await ClothingItem.find();
   return res.json(clothingItems);
 });
 
 exports.deleteClothingItem = asyncHandler(async (req, res) => {
-  const itemId = req.params.itemId;
+  const { itemId } = req.params;
   const currentUserId = req.user._id;
   checkValidity(itemId, "Item id is not valid");
-  const item = await ClothingItem.findByIdAndDelete(itemId);
-  if (!item) {
-    return res.sendStatus(NOT_FOUND);
-  }
-  if (item.owner._id !== currentUserId) {
-    return res.sendStatus(ACCESS_ERROR);
-  }
-  return res.status(200).end();
+  await ClothingItem.findById(itemId)
+    .orFail()
+    .then((item) => {
+      console.log(currentUserId);
+      console.log(item.owner._id);
+      if (currentUserId !== String(item.owner._id)) {
+        return res.status(ACCESS_ERROR).send({ message: "Acces denied" });
+      }
+      return item
+        .deleteOne()
+        .then(() => res.status(200).send({ message: "Successfully deleted" }));
+    })
+    .catch(() => {
+      const error = new Error("Not found");
+      error.statusCode = NOT_FOUND;
+      throw error;
+    });
 });
 
 exports.createNewItem = asyncHandler(async (req, res) => {
@@ -35,15 +49,19 @@ exports.createNewItem = asyncHandler(async (req, res) => {
     return res.status(201).json(newItem);
   } catch (err) {
     const error = new Error(err.message);
-    error.statusCode = BAD_REQUEST;
+    if (err.name === "ValidationError") {
+      error.statusCode = BAD_REQUEST;
+    } else {
+      error.statusCode = INTERNAL_SERVER_ERROR;
+    }
     throw error;
   }
 });
 
 exports.likeClothingItem = asyncHandler(async (req, res) => {
-  const itemId = req.params.itemId;
+  const { itemId } = req.params;
   checkValidity(itemId, "Item id is not valid");
-  const item = await ClothingItem.findById(itemId).orFail(() => {
+  await ClothingItem.findById(itemId).orFail(() => {
     const error = new Error("Item not found");
     error.statusCode = NOT_FOUND;
     throw error;
@@ -53,21 +71,22 @@ exports.likeClothingItem = asyncHandler(async (req, res) => {
     { $addToSet: { likes: req.user._id } }, // add _id to the array if it's not there yet
     { new: true }
   );
-  return res.status(200).end();
+  return res.status(200).send({ message: "Successfully liked" });
 });
 
 exports.unlikeClothingItem = asyncHandler(async (req, res) => {
-  const itemId = req.params.itemId;
+  const { itemId } = req.params;
   checkValidity(itemId, "Item id is not valid");
-  const item = await ClothingItem.findById(itemId).orFail(() => {
+  console.log(req.user._id);
+  await ClothingItem.findById(itemId).orFail(() => {
     const error = new Error("Item not found");
     error.statusCode = NOT_FOUND;
     throw error;
   });
   await ClothingItem.findByIdAndUpdate(
     req.params.itemId,
-    { $pull: { likes: req.user._id } }, // remove _id to the array if it's not there yet
-    { new: true }
+    { $pull: { likes: req.user._id } } // remove _id to the array if it's not there yet
+    // { new: true }
   );
-  return res.status(200).end();
+  return res.status(200).send({ message: "Successfully unliked" });
 });

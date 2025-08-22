@@ -1,17 +1,17 @@
 const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
 const User = require("../models/user");
 const { JWT_SECRET } = require("../utils/config");
-
 const asyncHandler = require("../utils/asyncHandler");
-const { NOT_FOUND, CONFLICT_ERROR, BAD_REQUEST } = require("../utils/errors");
+const {
+  NOT_FOUND,
+  CONFLICT_ERROR,
+  BAD_REQUEST,
+  SERVER_ERROR_MESSAGE,
+  INTERNAL_SERVER_ERROR,
+} = require("../utils/errors");
 const checkValidity = require("../utils/checkValidity");
-const bcrypt = require("bcrypt");
 const { handleMongoError } = require("../utils/handleErrors");
-
-exports.getUsers = asyncHandler(async (req, res) => {
-  const users = await User.find();
-  return res.json(users);
-});
 
 exports.getCurrentUser = asyncHandler(async (req, res) => {
   const userId = req.user._id;
@@ -26,14 +26,14 @@ exports.getCurrentUser = asyncHandler(async (req, res) => {
 });
 
 exports.updateCurrentUser = asyncHandler(async (req, res) => {
-  let { name, avatar } = req.body;
+  const { name, avatar } = req.body;
   const userId = req.user._id;
   checkValidity(userId, "User ID is not valid");
   const user = await User.findByIdAndUpdate(
     {
       _id: req.user._id,
     },
-    { name: name, avatar: avatar },
+    { name, avatar },
     { new: true, runValidators: true }
   )
     .then((updatedUser) => {
@@ -51,15 +51,15 @@ exports.updateCurrentUser = asyncHandler(async (req, res) => {
 });
 
 exports.createUser = asyncHandler(async (req, res) => {
-  let { name, avatar, email, password } = req.body;
-  if (await User.findOne({ email: email })) {
+  const { name, avatar, email, password } = req.body;
+  if (await User.findOne({ email })) {
     const error = new Error("Conflict email error");
     error.statusCode = CONFLICT_ERROR;
     throw error;
   }
   try {
-    password = await bcrypt.hash(password, 10);
-    const user = new User({ name, avatar, email, password });
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const user = new User({ name, avatar, email, hashedPassword });
     await user.save();
     res
       .status(201)
@@ -84,6 +84,11 @@ exports.login = asyncHandler(async (req, res) => {
       res.send({ token });
     })
     .catch((err) => {
-      res.status(401).send({ message: err.message });
+      if (err.name === "Incorrect email or password") {
+        res.status(401).send({ message: err.message });
+      }
+      const error = new Error(SERVER_ERROR_MESSAGE);
+      error.statusCode = INTERNAL_SERVER_ERROR;
+      throw error;
     });
 });
