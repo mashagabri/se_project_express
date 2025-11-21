@@ -66,16 +66,17 @@ exports.likeClothingItem = asyncHandler(async (req, res) => {
     error.statusCode = NOT_FOUND;
     throw error;
   });
-  await ClothingItem.findByIdAndUpdate(
+  const updatedLike = await ClothingItem.findByIdAndUpdate(
     itemId,
     { $addToSet: { likes: req.user._id } }, // add _id to the array if it's not there yet
     { new: true }
   );
-  return res.status(200).send({ message: "Successfully liked" });
+  return res.status(200).send(updatedLike);
 });
 
 exports.unlikeClothingItem = asyncHandler(async (req, res) => {
   const { itemId } = req.params;
+  console.log(itemId);
   checkValidity(itemId, "Item id is not valid");
   console.log(req.user._id);
   await ClothingItem.findById(itemId).orFail(() => {
@@ -83,10 +84,10 @@ exports.unlikeClothingItem = asyncHandler(async (req, res) => {
     error.statusCode = NOT_FOUND;
     throw error;
   });
-  await ClothingItem.findByIdAndUpdate(
+  const updatedLike = await ClothingItem.findByIdAndUpdate(
     req.params.itemId,
-    { $pull: { likes: req.user._id } } // remove _id to the array if it's not there yet
-    // { new: true }
+    { $pull: { likes: req.user._id } }, // remove _id to the array if it's not there yet
+    { new: true }
   );
-  return res.status(200).send({ message: "Successfully unliked" });
+  return res.status(200).send(updatedLike);
 });

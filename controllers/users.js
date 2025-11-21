@@ -23,7 +23,12 @@ exports.getCurrentUser = asyncHandler(async (req, res) => {
     error.statusCode = NOT_FOUND;
     throw error;
   });
-  res.json({ name: user.name, avatar: user.avatar, email: user.email });
+  res.json({
+    _id: user._id,
+    name: user.name,
+    avatar: user.avatar,
+    email: user.email,
+  });
 });
 
 exports.updateCurrentUser = asyncHandler(async (req, res) => {
@@ -48,18 +53,21 @@ exports.updateCurrentUser = asyncHandler(async (req, res) => {
     .catch((err) => {
       handleMongoError(err);
     });
-  res.json({ name: user.name, email: user.email, avatar: user.avatar });
+  res.json({ name: user.name, avatar: user.avatar });
 });
 
 exports.createUser = asyncHandler(async (req, res) => {
   const { name, avatar, email, password } = req.body;
+  console.log(name);
   if (await User.findOne({ email })) {
     const error = new Error("Conflict email error");
     error.statusCode = CONFLICT_ERROR;
     throw error;
   }
   try {
+    console.log(password);
     const hashedPassword = await bcrypt.hash(password, 10);
+    console.log(hashedPassword);
     const user = new User({ name, avatar, email, password: hashedPassword });
     await user.save();
     res
@@ -79,12 +87,14 @@ exports.login = asyncHandler(async (req, res) => {
   }
   return User.findUserByCredentials(email, password)
     .then((user) => {
+      console.log(user);
       const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
         expiresIn: "7d",
       });
       res.send({ token });
     })
     .catch((err) => {
+      console.log(err);
       if (err.message === "Incorrect email or password") {
         const error = new Error("Authorizations denied");
         error.statusCode = AUTHORIZATION_DENIED;
