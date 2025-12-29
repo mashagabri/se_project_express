@@ -1,12 +1,10 @@
 const mongoose = require("mongoose");
-const { BAD_REQUEST } = require("./errors");
+const { BadRequestError } = require("../errors/bad-request");
 
 // check type ID  (24 symbols)
-module.exports = (id, message) => {
+module.exports = (id, message = null) => {
   // is checking that there are 24 symbols(only letters and numbers)
   if (!mongoose.Types.ObjectId.isValid(id)) {
-    const error = new Error(message);
-    error.statusCode = BAD_REQUEST;
-    throw error;
+    throw new BadRequestError(message);
   }
 };

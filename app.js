@@ -7,11 +7,13 @@ const userRoutes = require("./routes/users");
 const itemsRoutes = require("./routes/clothingItems");
 const clothingItemsController = require("./controllers/clothingItems");
 const errorMiddleware = require("./middlewares/error.middleware");
-const { NOT_FOUND } = require("./utils/errors");
+const { requestLogger, errorLogger } = require("./middlewares/logger");
+const { errors } = require("celebrate");
 
 const { PORT = 3001 } = process.env;
 
 const app = express();
+app.use(requestLogger);
 app.use(cors());
 app.use(express.json());
 app.use("/", indexRoutes);
@@ -19,8 +21,16 @@ app.get("/items", clothingItemsController.getClothingItems);
 app.use(auth);
 app.use("/users", userRoutes);
 app.use("/items", itemsRoutes);
-app.use((req, res) => res.status(NOT_FOUND).send({ message: "Undefined URL" }));
+app.use(errorLogger);
+app.use(errors());
+console.log("Error");
 app.use(errorMiddleware);
+app.use((err, req, res, next) => {
+  console.error(err);
+  return res
+    .status(500)
+    .send({ message: "An error has occurred on the server" });
+});
 
 try {
   mongoose.connect("mongodb://127.0.0.1:27017/wtwr_db", {
