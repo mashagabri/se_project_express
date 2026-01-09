@@ -9,6 +9,7 @@ const clothingItemsController = require("./controllers/clothingItems");
 const errorMiddleware = require("./middlewares/error.middleware");
 const { requestLogger, errorLogger } = require("./middlewares/logger");
 const { errors } = require("celebrate");
+require("dotenv").config();
 
 const { PORT = 3001 } = process.env;
 
