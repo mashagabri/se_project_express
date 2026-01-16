@@ -14,13 +14,24 @@ require("dotenv").config();
 const { PORT = 3001 } = process.env;
 
 const app = express();
+app.use((req, res, next) => {
+  res.header(
+    "Access-Control-Allow-Origin",
+    "https://www.mariazackwtwr.jumpingcrab.com"
+  );
+  res.header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE");
+  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.header("Access-Control-Allow-Credentials", "true");
+  next();
+});
 app.use(requestLogger);
-app.use(
-  cors({
-    origin: "https://www.mariazackwtwr.jumpingcrab.com",
-    credentials: true,
-  })
-);
+// app.use(
+//   cors()
+//   // cors({
+//   //   origin: "https://www.mariazackwtwr.jumpingcrab.com",
+//   //   credentials: true,
+//   // })
+// );
 app.use(express.json());
 app.use("/", indexRoutes);
 app.get("/items", clothingItemsController.getClothingItems);
