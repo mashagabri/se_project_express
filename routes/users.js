@@ -1,8 +1,9 @@
 const express = require("express");
-const { getCurrentUser, updateCurrentUser } = require("../controllers/users");
 const { celebrate, Joi } = require("celebrate");
-const router = express.Router();
+const { getCurrentUser, updateCurrentUser } = require("../controllers/users");
 const { validateURL } = require("../middlewares/validation");
+
+const router = express.Router();
 
 router.get("/me", getCurrentUser);
 

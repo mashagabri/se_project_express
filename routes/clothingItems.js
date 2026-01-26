@@ -1,8 +1,9 @@
 const express = require("express");
-const clothingItemsController = require("../controllers/clothingItems");
 const { celebrate, Joi } = require("celebrate");
-const router = express.Router();
+const clothingItemsController = require("../controllers/clothingItems");
 const { validateURL, validateId } = require("../middlewares/validation");
+
+const router = express.Router();
 
 // router.get("/", clothingItemsController.getClothingItems);
 

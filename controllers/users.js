@@ -4,11 +4,12 @@ const User = require("../models/user");
 const { JWT_SECRET } = require("../utils/config");
 
 const checkValidity = require("../utils/checkValidity");
-const { AuthorizationDeniedError } = require("../errors/authorization-denied");
-const { BadRequestError } = require("../errors/bad-request");
-const { NotFoundError } = require("../errors/not-found-err");
+const AuthorizationDeniedError = require("../errors/authorization-denied");
+const BadRequestError = require("../errors/bad-request");
+const NotFoundError = require("../errors/not-found-err");
+const ConflictError = require("../errors/conflict-error");
 
-exports.getCurrentUser = async (req, res) => {
+exports.getCurrentUser = async (req, res, next) => {
   const userId = req.user._id;
 
   try {

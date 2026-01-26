@@ -1,8 +1,8 @@
 const ClothingItem = require("../models/clothingItem");
 const checkValidity = require("../utils/checkValidity");
-const { NotFoundError } = require("../errors/not-found-err");
-const { AccessError } = require("../errors/access-error");
-const { BadRequestError } = require("../errors/bad-request");
+const NotFoundError = require("../errors/not-found-err");
+const AccessError = require("../errors/access-error");
+const BadRequestError = require("../errors/bad-request");
 
 exports.getClothingItems = async (req, res) => {
   const clothingItems = await ClothingItem.find();
@@ -26,8 +26,7 @@ exports.deleteClothingItem = async (req, res, next) => {
             res.status(200).send({ message: "Successfully deleted" })
           );
       })
-      .catch((err) => {
-        // next(err);
+      .catch(() => {
         throw new NotFoundError();
       });
   } catch (err) {
@@ -47,8 +46,7 @@ exports.createNewItem = async (req, res, next) => {
     });
     return res.status(201).json(newItem);
   } catch (err) {
-    next(new BadRequestError());
-
+    return next(new BadRequestError());
     // if (err.name === "ValidationError") {
     //   error.statusCode = BAD_REQUEST;
     // } else {
@@ -72,11 +70,11 @@ exports.likeClothingItem = async (req, res, next) => {
     );
     return res.status(200).send(updatedLike);
   } catch (err) {
-    next(err);
+    return next(err);
   }
 };
 
-exports.unlikeClothingItem = async (req, res) => {
+exports.unlikeClothingItem = async (req, res, next) => {
   try {
     const { itemId } = req.params;
     checkValidity(itemId, "Item id is not valid");
@@ -84,12 +82,12 @@ exports.unlikeClothingItem = async (req, res) => {
       throw new NotFoundError();
     });
     const updatedLike = await ClothingItem.findByIdAndUpdate(
-      req.params.itemId,
+      itemId,
       { $pull: { likes: req.user._id } }, // remove _id to the array if it's not there yet
       { new: true }
     );
     return res.status(200).send(updatedLike);
   } catch (err) {
-    next(err);
+    return next(err);
   }
 };

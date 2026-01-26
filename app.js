@@ -1,6 +1,6 @@
 const express = require("express");
 const mongoose = require("mongoose");
-const cors = require("cors");
+const { errors } = require("celebrate");
 const auth = require("./middlewares/auth");
 const indexRoutes = require("./routes/index");
 const userRoutes = require("./routes/users");
@@ -8,7 +8,6 @@ const itemsRoutes = require("./routes/clothingItems");
 const clothingItemsController = require("./controllers/clothingItems");
 const errorMiddleware = require("./middlewares/error.middleware");
 const { requestLogger, errorLogger } = require("./middlewares/logger");
-const { errors } = require("celebrate");
 require("dotenv").config();
 
 const { PORT = 3001 } = process.env;
@@ -26,7 +25,7 @@ app.use((req, res, next) => {
   if (req.method === "OPTIONS") {
     return res.sendStatus(204);
   }
-  next();
+  return next();
 });
 app.use(requestLogger);
 // app.use(
@@ -46,7 +45,7 @@ app.use(errorLogger);
 app.use(errors());
 console.log("Error");
 app.use(errorMiddleware);
-app.use((err, req, res, next) => {
+app.use((err, _req, res, _next) => {
   console.error(err);
   return res
     .status(500)

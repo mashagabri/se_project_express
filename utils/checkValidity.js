@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const { BadRequestError } = require("../errors/bad-request");
+const BadRequestError = require("../errors/bad-request");
 
 // check type ID  (24 symbols)
 module.exports = (id, message = null) => {

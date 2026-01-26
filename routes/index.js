@@ -1,8 +1,9 @@
 const express = require("express");
-const { login, createUser } = require("../controllers/users");
 const { celebrate, Joi } = require("celebrate");
-const router = express.Router();
+const { login, createUser } = require("../controllers/users");
 const { validateURL } = require("../middlewares/validation");
+
+const router = express.Router();
 
 router.post(
   "/signin",
