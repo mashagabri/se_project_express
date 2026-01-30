@@ -17,6 +17,7 @@ exports.deleteClothingItem = async (req, res, next) => {
     await ClothingItem.findById(itemId)
       .orFail()
       .then((item) => {
+        console.log(currentUserId);
         if (currentUserId !== String(item.owner._id)) {
           throw new AccessError();
         }
@@ -25,10 +26,11 @@ exports.deleteClothingItem = async (req, res, next) => {
           .then(() =>
             res.status(200).send({ message: "Successfully deleted" })
           );
-      })
-      .catch(() => {
-        throw new NotFoundError();
       });
+    // .catch((e) => {
+    //   console.log(e);
+    //   throw new NotFoundError();
+    // });
   } catch (err) {
     next(err);
   }

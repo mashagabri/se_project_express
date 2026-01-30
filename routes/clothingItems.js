@@ -6,7 +6,6 @@ const { validateURL, validateId } = require("../middlewares/validation");
 const router = express.Router();
 
 // router.get("/", clothingItemsController.getClothingItems);
-
 router.delete(
   "/:itemId",
   validateId,
