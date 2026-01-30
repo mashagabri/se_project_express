@@ -1,7 +1,6 @@
 const express = require("express");
 const { celebrate, Joi } = require("celebrate");
 const { login, createUser } = require("../controllers/users");
-const { validateURL } = require("../middlewares/validation");
 
 const router = express.Router();
 

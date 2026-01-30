@@ -14,25 +14,17 @@ exports.deleteClothingItem = async (req, res, next) => {
     const { itemId } = req.params;
     const currentUserId = req.user._id;
     checkValidity(itemId, "Item id is not valid");
-    await ClothingItem.findById(itemId)
-      .orFail()
-      .then((item) => {
-        console.log(currentUserId);
-        if (currentUserId !== String(item.owner._id)) {
-          throw new AccessError();
-        }
-        return item
-          .deleteOne()
-          .then(() =>
-            res.status(200).send({ message: "Successfully deleted" })
-          );
-      });
-    // .catch((e) => {
-    //   console.log(e);
-    //   throw new NotFoundError();
-    // });
+    const item = await ClothingItem.findById(itemId).orFail();
+    if (currentUserId !== String(item.owner._id)) {
+      throw new AccessError();
+    }
+    await item.deleteOne();
+    return res.status(200).send({ message: "Successfully deleted" });
   } catch (err) {
-    next(err);
+    if (err.name === "DocumentNotFoundError") {
+      return next(new NotFoundError());
+    }
+    return next(err);
   }
 };
 
@@ -49,12 +41,6 @@ exports.createNewItem = async (req, res, next) => {
     return res.status(201).json(newItem);
   } catch (err) {
     return next(new BadRequestError());
-    // if (err.name === "ValidationError") {
-    //   error.statusCode = BAD_REQUEST;
-    // } else {
-    //   error.statusCode = INTERNAL_SERVER_ERROR;
-    // }
-    // throw error;
   }
 };
 
